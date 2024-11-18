@@ -1,2 +1,4 @@
 __pycache__
 .DS_Store
+dataset/yoochoose-test.dat
+dataset/yoochoose-clicks.dat
