@@ -34,20 +34,44 @@ This will be quick guide we've tried already and it's gonna be simple
 
 1.  Change directory to this repo
 
-```bash
-cd <YOUR_REPO_DIRECTORY_PATH>/GRU4Rec_PyTorch_Official
-```
+    ```bash
+    cd <YOUR_REPO_DIRECTORY_PATH>/GRU4Rec_PyTorch_Official
+    ```
 
 2.  Run python srcipt for traning the model (please refer to the [flag](#usage "Usage"))
 
-```bash
-python3 run.py dataset/yoochoose-clicks-100k.pickle \
-  -t dataset/yoochoose-test-100k.pickle \
-  -m 10 \
-  -pf paramfiles/embed8_rec15_params.py \
-  -d cpu \
-  -s model/model-yoochoose-clicks-100k.pt
-```
+    - For 8-dimension embedding
+      ```bash
+      python3 run.py dataset/yoochoose-clicks-100k.pickle \
+        -t dataset/yoochoose-test-100k.pickle \
+        -m 10 \
+        -pf paramfiles/embed8_rec15_params.py \
+        -d cpu
+      ```
+    - For 16-dimension embedding
+      ```bash
+      python3 run.py dataset/yoochoose-clicks-100k.pickle \
+        -t dataset/yoochoose-test-100k.pickle \
+        -m 10 \
+        -pf paramfiles/embed16_rec15_params.py \
+        -d cpu
+      ```
+    - For 32-dimension embedding
+      ```bash
+      python3 run.py dataset/yoochoose-clicks-100k.pickle \
+        -t dataset/yoochoose-test-100k.pickle \
+        -m 10 \
+        -pf paramfiles/embed32_rec15_params.py \
+        -d cpu
+      ```
+    - For 64-dimension embedding
+      ```bash
+      python3 run.py dataset/yoochoose-clicks-100k.pickle \
+        -t dataset/yoochoose-test-100k.pickle \
+        -m 10 \
+        -pf paramfiles/embed64_rec15_params.py \
+        -d cpu
+      ```
 
 ## Differences to the original
 
