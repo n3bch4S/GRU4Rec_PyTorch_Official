@@ -43,8 +43,8 @@ cd <YOUR_REPO_DIRECTORY_PATH>/GRU4Rec_PyTorch_Official
 ```bash
 python3 run.py dataset/yoochoose-clicks-100k.pickle \
   -t dataset/yoochoose-test-100k.pickle \
-  -m 20 \
-  -pf paramfiles/rsc15_xe_shared_100_best.py \
+  -m 10 \
+  -pf paramfiles/embed8_rec15_params.py \
   -d cpu \
   -s model/model-yoochoose-clicks-100k.pt
 ```
