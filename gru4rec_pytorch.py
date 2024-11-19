@@ -122,40 +122,68 @@ class GRUEmbedding(nn.Module):
 class GRU4RecModel(nn.Module):
     def __init__(
         self,
-        n_items,
-        layers=[100],
-        dropout_p_embed=0.0,
-        dropout_p_hidden=0.0,
-        embedding=0,
-        constrained_embedding=True,
+        n_items,  # Number of unique items in the dataset
+        layers=[
+            100
+        ],  # List of hidden layer sizes (e.g., [100] for a single layer with 100 units)
+        dropout_p_embed=0.0,  # Dropout probability for the embedding layer
+        dropout_p_hidden=0.0,  # Dropout probability for hidden layers
+        embedding=0,  # Dimension of the item embeddings, 0 if not using explicit embeddings
+        constrained_embedding=True,  # Whether to use a constrained embedding setup
     ):
         super(GRU4RecModel, self).__init__()
-        self.n_items = n_items
-        self.layers = layers
-        self.dropout_p_embed = dropout_p_embed
-        self.dropout_p_hidden = dropout_p_hidden
-        self.embedding = embedding
-        self.constrained_embedding = constrained_embedding
-        self.start = 0
+
+        # Initialize parameters
+        self.n_items = n_items  # Total number of items
+        self.layers = layers  # List of hidden layer dimensions
+        self.dropout_p_embed = dropout_p_embed  # Dropout probability for embeddings
+        self.dropout_p_hidden = (
+            dropout_p_hidden  # Dropout probability for hidden layers
+        )
+        self.embedding = embedding  # Size of the embedding vectors
+        self.constrained_embedding = (
+            constrained_embedding  # Toggle for constrained embedding
+        )
+        self.start = 0  # Indicator of where to start GRU layers
+
+        # Determine input size based on embedding settings
         if constrained_embedding:
+            # Use the last hidden layer's size as the input when constrained embeddings are used
             n_input = layers[-1]
         elif embedding:
+            # Initialize explicit embedding layer if embedding size is provided
             self.E = nn.Embedding(n_items, embedding, sparse=True)
             n_input = embedding
         else:
+            # Use a custom GRUEmbedding when no explicit embedding is provided
             self.GE = GRUEmbedding(n_items, layers[0])
             n_input = n_items
-            self.start = 1
+            self.start = 1  # Adjust start index when using GRUEmbedding
+
+        # Dropout layer for embeddings
         self.DE = nn.Dropout(dropout_p_embed)
-        self.G = []
-        self.D = []
+
+        # Initialize GRU cells and Dropout layers for hidden layers
+        self.G = []  # List to store GRU cells
+        self.D = []  # List to store dropout layers
         for i in range(self.start, len(layers)):
+            # Append a GRUCell for each hidden layer
             self.G.append(nn.GRUCell(layers[i - 1] if i > 0 else n_input, layers[i]))
+
+            # Append a dropout layer for each hidden layer
             self.D.append(nn.Dropout(dropout_p_hidden))
+
+        # Convert lists to ModuleLists for use in nn.Module
         self.G = nn.ModuleList(self.G)
         self.D = nn.ModuleList(self.D)
-        self.Wy = nn.Embedding(n_items, layers[-1], sparse=True)
-        self.By = nn.Embedding(n_items, 1, sparse=True)
+
+        # Embedding layers for the output (used for final scoring)
+        self.Wy = nn.Embedding(
+            n_items, layers[-1], sparse=True
+        )  # Weight matrix for items
+        self.By = nn.Embedding(n_items, 1, sparse=True)  # Bias vector for items
+
+        # Initialize parameters of the model
         self.reset_parameters()
 
     @torch.no_grad()
