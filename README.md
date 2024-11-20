@@ -14,6 +14,7 @@ The purpose of this reimplementation is to provide an official version of the al
 
 **CONTENTS:**  
 **[Quick Guide](#quick-guide "Quick Guide")**  
+**[Result](#result "Result")**  
 [Differences to the original](#differences-to-the-original "Differences to the original")  
   [Removed hyperparameters/settings](#removed-hyperparameterssettings "Removed hyperparameters/settings")  
   [Changed hyperparameters/settings](#changed-hyperparameterssettings "Changed hyperparameters/settings")  
@@ -42,36 +43,223 @@ This will be quick guide we've tried already and it's gonna be simple
 
     - For 8-dimension embedding
       ```bash
-      python3 run.py dataset/yoochoose-clicks-100k.pickle \
-        -t dataset/yoochoose-test-100k.pickle \
+      python3 run.py dataset/01_yoochoose_clicks_100k.pickle \
+        -t dataset/02_yoochoose_test_100k.pickle \
         -m 10 \
         -pf paramfiles/embed8_rec15_params.py \
         -d cpu
       ```
     - For 16-dimension embedding
       ```bash
-      python3 run.py dataset/yoochoose-clicks-100k.pickle \
-        -t dataset/yoochoose-test-100k.pickle \
+      python3 run.py dataset/01_yoochoose_clicks_100k.pickle \
+        -t dataset/02_yoochoose_test_100k.pickle \
         -m 10 \
         -pf paramfiles/embed16_rec15_params.py \
         -d cpu
       ```
     - For 32-dimension embedding
       ```bash
-      python3 run.py dataset/yoochoose-clicks-100k.pickle \
-        -t dataset/yoochoose-test-100k.pickle \
+      python3 run.py dataset/01_yoochoose_clicks_100k.pickle \
+        -t dataset/02_yoochoose_test_100k.pickle \
         -m 10 \
         -pf paramfiles/embed32_rec15_params.py \
         -d cpu
       ```
     - For 64-dimension embedding
       ```bash
-      python3 run.py dataset/yoochoose-clicks-100k.pickle \
-        -t dataset/yoochoose-test-100k.pickle \
+      python3 run.py dataset/01_yoochoose_clicks_100k.pickle \
+        -t dataset/02_yoochoose_test_100k.pickle \
         -m 10 \
         -pf paramfiles/embed64_rec15_params.py \
         -d cpu
       ```
+
+## Result
+
+1. 8-dimension embedding
+   ```txt
+   Loaded parameters from file: /Users/tada/Documents/GitHub/GRU4Rec_PyTorch_Official/paramfiles/embed8_rec15_params.py
+   Creating GRU4Rec model on device "cpu"
+   SET   loss                    TO   top1    (type: <class 'str'>)
+   SET   constrained_embedding   TO   False   (type: <class 'bool'>)
+   SET   embedding               TO   8       (type: <class 'int'>)
+   SET   elu_param               TO   0.0     (type: <class 'float'>)
+   SET   layers                  TO   [8]     (type: <class 'list'>)
+   SET   n_epochs                TO   10      (type: <class 'int'>)
+   SET   batch_size              TO   50      (type: <class 'int'>)
+   SET   dropout_p_embed         TO   0.0     (type: <class 'float'>)
+   SET   dropout_p_hidden        TO   0.5     (type: <class 'float'>)
+   SET   learning_rate           TO   0.01    (type: <class 'float'>)
+   SET   momentum                TO   0.0     (type: <class 'float'>)
+   SET   n_sample                TO   32      (type: <class 'int'>)
+   SET   sample_alpha            TO   0.5     (type: <class 'float'>)
+   SET   bpreg                   TO   0.0     (type: <class 'float'>)
+   SET   logq                    TO   1.0     (type: <class 'float'>)
+   Loading training data...
+   Loading data from pickle file: dataset/01_yoochoose_clicks_100k.pickle
+   Started training
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.03
+   Created sample store with 312500 batches of samples (type=GPU)
+   Epoch1 --> loss: 57.463577      (1.01s)         [1548.00 mb/s | 77400 e/s]
+   Epoch2 --> loss: 54.647937      (0.93s)         [1681.49 mb/s | 84075 e/s]
+   Epoch3 --> loss: 52.915441      (0.93s)         [1690.58 mb/s | 84529 e/s]
+   Epoch4 --> loss: 51.677493      (0.93s)         [1687.62 mb/s | 84381 e/s]
+   Epoch5 --> loss: 50.745553      (0.93s)         [1687.33 mb/s | 84366 e/s]
+   Epoch6 --> loss: 50.062295      (0.93s)         [1678.78 mb/s | 83939 e/s]
+   Epoch7 --> loss: 49.360629      (0.94s)         [1678.03 mb/s | 83902 e/s]
+   Epoch8 --> loss: 48.865430      (0.93s)         [1682.71 mb/s | 84135 e/s]
+   Epoch9 --> loss: 48.341528      (0.93s)         [1680.80 mb/s | 84040 e/s]
+   Epoch10 --> loss: 47.909305     (0.95s)         [1645.35 mb/s | 82268 e/s]
+   Total training time: 11.39s
+   Loading test data...
+   Loading data from pickle file: dataset/02_yoochoose_test_100k.pickle
+   Starting evaluation (cut-off=[10], using standard mode for tiebreaking)
+   Using existing item ID map
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.03
+   Evaluation took 1.70s
+   Recall@10: 0.097548 MRR@10: 0.033448 HR@10: 0.085500 NDCG@10: 0.035223
+   ```
+2. 16-dimension embedding
+
+   ```txt
+   Loaded parameters from file: /Users/tada/Documents/GitHub/GRU4Rec_PyTorch_Official/paramfiles/embed16_rec15_params.py
+   Creating GRU4Rec model on device "cpu"
+   SET   loss                    TO   top1    (type: <class 'str'>)
+   SET   constrained_embedding   TO   False   (type: <class 'bool'>)
+   SET   embedding               TO   16      (type: <class 'int'>)
+   SET   elu_param               TO   0.0     (type: <class 'float'>)
+   SET   layers                  TO   [16]    (type: <class 'list'>)
+   SET   n_epochs                TO   10      (type: <class 'int'>)
+   SET   batch_size              TO   50      (type: <class 'int'>)
+   SET   dropout_p_embed         TO   0.0     (type: <class 'float'>)
+   SET   dropout_p_hidden        TO   0.5     (type: <class 'float'>)
+   SET   learning_rate           TO   0.01    (type: <class 'float'>)
+   SET   momentum                TO   0.0     (type: <class 'float'>)
+   SET   n_sample                TO   32      (type: <class 'int'>)
+   SET   sample_alpha            TO   0.5     (type: <class 'float'>)
+   SET   bpreg                   TO   0.0     (type: <class 'float'>)
+   SET   logq                    TO   1.0     (type: <class 'float'>)
+   Loading training data...
+   Loading data from pickle file: dataset/01_yoochoose_clicks_100k.pickle
+   Started training
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.03
+   Created sample store with 312500 batches of samples (type=GPU)
+   Epoch1 --> loss: 56.448218      (0.85s)         [1839.92 mb/s | 91996 e/s]
+   Epoch2 --> loss: 51.903134      (0.77s)         [2041.75 mb/s | 102087 e/s]
+   Epoch3 --> loss: 49.435395      (0.77s)         [2048.64 mb/s | 102432 e/s]
+   Epoch4 --> loss: 47.917920      (0.76s)         [2054.95 mb/s | 102748 e/s]
+   Epoch5 --> loss: 46.764607      (0.77s)         [2040.94 mb/s | 102047 e/s]
+   Epoch6 --> loss: 45.849242      (0.76s)         [2056.15 mb/s | 102808 e/s]
+   Epoch7 --> loss: 45.045004      (0.76s)         [2059.17 mb/s | 102959 e/s]
+   Epoch8 --> loss: 44.407823      (0.76s)         [2057.60 mb/s | 102880 e/s]
+   Epoch9 --> loss: 43.891529      (0.77s)         [2049.43 mb/s | 102472 e/s]
+   Epoch10 --> loss: 43.332195     (0.76s)         [2054.90 mb/s | 102745 e/s]
+   Total training time: 9.75s
+   Loading test data...
+   Loading data from pickle file: dataset/02_yoochoose_test_100k.pickle
+   Starting evaluation (cut-off=[10], using standard mode for tiebreaking)
+   Using existing item ID map
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.02
+   Evaluation took 1.66s
+   Recall@10: 0.141471 MRR@10: 0.054559 HR@10: 0.125526 NDCG@10: 0.039596
+   ```
+
+3. 32-dimension embedding
+
+   ```txt
+   Loaded parameters from file: /Users/tada/Documents/GitHub/GRU4Rec_PyTorch_Official/paramfiles/embed32_rec15_params.py
+   Creating GRU4Rec model on device "cpu"
+   SET   loss                    TO   top1    (type: <class 'str'>)
+   SET   constrained_embedding   TO   False   (type: <class 'bool'>)
+   SET   embedding               TO   32      (type: <class 'int'>)
+   SET   elu_param               TO   0.0     (type: <class 'float'>)
+   SET   layers                  TO   [32]    (type: <class 'list'>)
+   SET   n_epochs                TO   10      (type: <class 'int'>)
+   SET   batch_size              TO   50      (type: <class 'int'>)
+   SET   dropout_p_embed         TO   0.0     (type: <class 'float'>)
+   SET   dropout_p_hidden        TO   0.5     (type: <class 'float'>)
+   SET   learning_rate           TO   0.01    (type: <class 'float'>)
+   SET   momentum                TO   0.0     (type: <class 'float'>)
+   SET   n_sample                TO   32      (type: <class 'int'>)
+   SET   sample_alpha            TO   0.5     (type: <class 'float'>)
+   SET   bpreg                   TO   0.0     (type: <class 'float'>)
+   SET   logq                    TO   1.0     (type: <class 'float'>)
+   Loading training data...
+   Loading data from pickle file: dataset/01_yoochoose_clicks_100k.pickle
+   Started training
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.02
+   Created sample store with 312500 batches of samples (type=GPU)
+   Epoch1 --> loss: 53.228023      (1.11s)         [1412.93 mb/s | 70647 e/s]
+   Epoch2 --> loss: 46.881638      (1.10s)         [1423.81 mb/s | 71191 e/s]
+   Epoch3 --> loss: 44.165675      (1.08s)         [1454.97 mb/s | 72748 e/s]
+   Epoch4 --> loss: 42.382478      (1.04s)         [1507.70 mb/s | 75385 e/s]
+   Epoch5 --> loss: 41.020029      (1.03s)         [1523.93 mb/s | 76197 e/s]
+   Epoch6 --> loss: 39.791239      (1.05s)         [1490.00 mb/s | 74500 e/s]
+   Epoch7 --> loss: 38.824251      (1.11s)         [1410.11 mb/s | 70506 e/s]
+   Epoch8 --> loss: 37.964068      (1.10s)         [1424.86 mb/s | 71243 e/s]
+   Epoch9 --> loss: 37.208721      (1.10s)         [1425.36 mb/s | 71268 e/s]
+   Epoch10 --> loss: 36.463487     (1.11s)         [1408.87 mb/s | 70444 e/s]
+   Total training time: 12.79s
+   Loading test data...
+   Loading data from pickle file: dataset/02_yoochoose_test_100k.pickle
+   Starting evaluation (cut-off=[10], using standard mode for tiebreaking)
+   Using existing item ID map
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.02
+   Evaluation took 1.50s
+   Recall@10: 0.182564 MRR@10: 0.077943 HR@10: 0.155027 NDCG@10: 0.044949
+   ```
+
+4. 64-dimension embedding
+   ```txt
+   Loaded parameters from file: /Users/tada/Documents/GitHub/GRU4Rec_PyTorch_Official/paramfiles/embed64_rec15_params.py
+   Creating GRU4Rec model on device "cpu"
+   SET   loss                    TO   top1    (type: <class 'str'>)
+   SET   constrained_embedding   TO   False   (type: <class 'bool'>)
+   SET   embedding               TO   64      (type: <class 'int'>)
+   SET   elu_param               TO   0.0     (type: <class 'float'>)
+   SET   layers                  TO   [64]    (type: <class 'list'>)
+   SET   n_epochs                TO   10      (type: <class 'int'>)
+   SET   batch_size              TO   50      (type: <class 'int'>)
+   SET   dropout_p_embed         TO   0.0     (type: <class 'float'>)
+   SET   dropout_p_hidden        TO   0.5     (type: <class 'float'>)
+   SET   learning_rate           TO   0.01    (type: <class 'float'>)
+   SET   momentum                TO   0.0     (type: <class 'float'>)
+   SET   n_sample                TO   32      (type: <class 'int'>)
+   SET   sample_alpha            TO   0.5     (type: <class 'float'>)
+   SET   bpreg                   TO   0.0     (type: <class 'float'>)
+   SET   logq                    TO   1.0     (type: <class 'float'>)
+   Loading training data...
+   Loading data from pickle file: dataset/01_yoochoose_clicks_100k.pickle
+   Started training
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.03
+   Created sample store with 312500 batches of samples (type=GPU)
+   Epoch1 --> loss: 49.451833      (1.39s)         [1130.07 mb/s | 56504 e/s]
+   Epoch2 --> loss: 41.716084      (1.24s)         [1263.59 mb/s | 63180 e/s]
+   Epoch3 --> loss: 38.327650      (1.25s)         [1258.93 mb/s | 62946 e/s]
+   Epoch4 --> loss: 35.686352      (1.26s)         [1246.19 mb/s | 62310 e/s]
+   Epoch5 --> loss: 33.480102      (1.24s)         [1268.62 mb/s | 63431 e/s]
+   Epoch6 --> loss: 31.742926      (1.25s)         [1260.23 mb/s | 63012 e/s]
+   Epoch7 --> loss: 30.297337      (1.24s)         [1267.92 mb/s | 63396 e/s]
+   Epoch8 --> loss: 29.159293      (1.24s)         [1265.05 mb/s | 63252 e/s]
+   Epoch9 --> loss: 28.102917      (1.31s)         [1201.92 mb/s | 60096 e/s]
+   Epoch10 --> loss: 27.235764     (1.30s)         [1204.32 mb/s | 60216 e/s]
+   Total training time: 14.65s
+   Loading test data...
+   Loading data from pickle file: dataset/02_yoochoose_test_100k.pickle
+   Starting evaluation (cut-off=[10], using standard mode for tiebreaking)
+   Using existing item ID map
+   The dataframe is not sorted by SessionId, sorting now
+   Data is sorted in 0.03
+   Evaluation took 1.58s
+   Recall@10: 0.203047 MRR@10: 0.089350 HR@10: 0.161868 NDCG@10: 0.048342
+   ```
 
 ## Differences to the original
 
