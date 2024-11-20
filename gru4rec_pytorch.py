@@ -285,14 +285,15 @@ class GRU4RecModel(nn.Module):
             B = self.By.weight
         return E, O, B
 
+    # Handles embedding generation when separate embedding layers are used for input and output
     def embed_separate(self, X, Y=None):
-        E = self.E(X)
-        if Y is not None:
-            O = self.Wy(Y)
-            B = self.By(Y)
-        else:
-            O = self.Wy.weight
-            B = self.By.weight
+        E = self.E(X)  # Embedding for the input items
+        if Y is not None:  # If target items are provided
+            O = self.Wy(Y)  # Output weight embeddings for target items
+            B = self.By(Y)  # Output bias embeddings for target items
+        else:  # If no target items are provided, use all items
+            O = self.Wy.weight  # Output weights for all items
+            B = self.By.weight  # Output biases for all items
         return E, O, B
 
     def embed_gru(self, X, H, Y=None):
@@ -305,35 +306,45 @@ class GRU4RecModel(nn.Module):
             B = self.By.weight
         return E, O, B
 
+    # Selects the appropriate embedding generation method based on the model's configuration
     def embed(self, X, H, Y=None):
         if self.constrained_embedding:
+            # Use constrained embedding (input size matches last hidden layer size)
             E, O, B = self.embed_constrained(X, Y)
         elif self.embedding > 0:
+            # Use separate embedding layers for input and output
             E, O, B = self.embed_separate(X, Y)
         else:
+            # Use GRUEmbedding when no explicit embedding layers are used
             E, O, B = self.embed_gru(X, H[0], Y)
         return E, O, B
 
+    # Executes a single step of the GRU hidden state update
     def hidden_step(self, X, H, training=False):
         for i in range(self.start, len(self.layers)):
-            X = self.G[i](X, Variable(H[i]))
-            if training:
+            X = self.G[i](X, Variable(H[i]))  # Update the GRU hidden state
+            if training:  # Apply dropout during training
                 X = self.D[i](X)
-            H[i] = X
-        return X
+            H[i] = X  # Update the hidden state
+        return X  # Return the final hidden state
 
+    # Computes scores for all items based on the current hidden state and output embeddings
     def score_items(self, X, O, B):
-        O = torch.mm(X, O.T) + B.T
+        O = torch.mm(X, O.T) + B.T  # Linear transformation (dot product) + bias
         return O
 
+    # Defines the forward pass of the model
     def forward(self, X, H, Y, training=False):
+        # Generate embeddings for the input, output weights, and biases
         E, O, B = self.embed(X, H, Y)
         if training:
-            E = self.DE(E)
+            E = self.DE(E)  # Apply dropout to embeddings during training
         if not (self.constrained_embedding or self.embedding):
-            H[0] = E
-        Xh = self.hidden_step(E, H, training=training)
-        R = self.score_items(Xh, O, B)
+            H[0] = (
+                E  # Use embeddings as the initial hidden state if no explicit embeddings are used
+            )
+        Xh = self.hidden_step(E, H, training=training)  # Update the hidden state
+        R = self.score_items(Xh, O, B)  # Compute item scores
         return R
 
 
