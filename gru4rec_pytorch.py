@@ -625,39 +625,54 @@ class GRU4Rec:
                 )
             )
 
+    # Cross-entropy loss with softmax adjustment
     def xe_loss_with_softmax(self, O, Y, M):
         if self.logq > 0:
+            # Adjust the scores using log probabilities of the items
             O = O - self.logq * torch.log(
                 torch.cat([self.P0[Y[:M]], self.P0[Y[M:]] ** self.sample_alpha])
             )
-        X = torch.exp(O - O.max(dim=1, keepdim=True)[0])
-        X = X / X.sum(dim=1, keepdim=True)
+        # Compute softmax scores for the output logits
+        X = torch.exp(O - O.max(dim=1, keepdim=True)[0])  # Numerical stability trick
+        X = X / X.sum(dim=1, keepdim=True)  # Normalize to get probabilities
+        # Calculate negative log-likelihood for the correct items
         return -torch.sum(torch.log(torch.diag(X) + 1e-24))
 
+    # Helper function to compute softmax for negative sampling
     def softmax_neg(self, X):
+        # Create a mask to ignore diagonal elements (target items)
         hm = 1.0 - torch.eye(*X.shape, out=torch.empty_like(X))
-        X = X * hm
+        X = X * hm  # Zero out diagonal elements
+        # Compute softmax probabilities for negative items
         e_x = torch.exp(X - X.max(dim=1, keepdim=True)[0]) * hm
-        return e_x / e_x.sum(dim=1, keepdim=True)
+        return e_x / e_x.sum(dim=1, keepdim=True)  # Normalize across each row
 
+    # BPR-max loss with optional ELU activation
     def bpr_max_loss_with_elu(self, O, Y, M):
         if self.elu_param > 0:
+            # Apply ELU activation to logits
             O = nn.functional.elu(O, self.elu_param)
+        # Compute softmax probabilities for negative items
         softmax_scores = self.softmax_neg(O)
+        # Extract scores for the target items (diagonal of O)
         target_scores = torch.diag(O)
         target_scores = target_scores.reshape(target_scores.shape[0], -1)
+        # Calculate the BPR-max loss
         return torch.sum(
             (
                 -torch.log(
                     torch.sum(torch.sigmoid(target_scores - O) * softmax_scores, dim=1)
                     + 1e-24
-                )
-                + self.bpreg * torch.sum((O**2) * softmax_scores, dim=1)
+                )  # BPR-max term
+                + self.bpreg
+                * torch.sum((O**2) * softmax_scores, dim=1)  # Regularization term
             )
         )
 
+    # Top-1 loss with optional ELU activation
     def top1_loss(self, O, Y, M):
         if self.elu_param > 0:
+            # Apply ELU activation to logits
             O = nn.functional.elu(O, self.elu_param)
 
         # The target scores are the diagonal elements of O (correct items' scores)
@@ -669,8 +684,10 @@ class GRU4Rec:
 
         # Calculate the Top-1 Loss
         loss = torch.sum(
-            torch.sum(sigmoid_diff, dim=1)
-            + torch.sum(torch.sigmoid(O**2) * torch.sigmoid(O), dim=1)
+            torch.sum(sigmoid_diff, dim=1)  # Sum of differences for all incorrect items
+            + torch.sum(
+                torch.sigmoid(O**2) * torch.sigmoid(O), dim=1
+            )  # Regularization term
         )
 
         return loss
