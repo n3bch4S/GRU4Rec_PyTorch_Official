@@ -695,90 +695,137 @@ class GRU4Rec:
     def fit(
         self,
         data,
-        sample_cache_max_size=10000000,
-        compatibility_mode=True,
-        item_key="ItemId",
-        session_key="SessionId",
-        time_key="Time",
+        sample_cache_max_size=10000000,  # Maximum size for caching samples
+        compatibility_mode=True,  # Whether to use weights compatible with older versions
+        item_key="ItemId",  # Key for item IDs in the dataset
+        session_key="SessionId",  # Key for session IDs in the dataset
+        time_key="Time",  # Key for timestamps in the dataset
     ):
+        # Track if any error occurs during training
         self.error_during_train = False
+
+        # Initialize the data iterator for session-based recommendation
         self.data_iterator = SessionDataIterator(
             data,
-            self.batch_size,
-            n_sample=self.n_sample,
-            sample_alpha=self.sample_alpha,
-            sample_cache_max_size=sample_cache_max_size,
+            self.batch_size,  # Batch size for training
+            n_sample=self.n_sample,  # Number of negative samples
+            sample_alpha=self.sample_alpha,  # Sampling distribution parameter
+            sample_cache_max_size=sample_cache_max_size,  # Limit for sampling cache size
             item_key=item_key,
             session_key=session_key,
             time_key=time_key,
-            session_order="time",
-            device=self.device,
+            session_order="time",  # Order sessions by time for training
+            device=self.device,  # Move data to the specified device (e.g., GPU)
         )
+
+        # Precompute item popularity for cross-entropy loss if logq is set
         if self.logq and self.loss == "cross-entropy":
-            pop = data.groupby(item_key).size()
+            pop = data.groupby(item_key).size()  # Get popularity of each item
             self.P0 = torch.tensor(
                 pop[self.data_iterator.itemidmap.index.values],
                 dtype=torch.float32,
                 device=self.device,
             )
+
+        # Initialize the GRU model
         model = GRU4RecModel(
-            self.data_iterator.n_items,
-            self.layers,
-            self.dropout_p_embed,
-            self.dropout_p_hidden,
-            self.embedding,
-            self.constrained_embedding,
-        ).to(self.device)
+            self.data_iterator.n_items,  # Number of unique items
+            self.layers,  # GRU hidden layer sizes
+            self.dropout_p_embed,  # Dropout probability for embeddings
+            self.dropout_p_hidden,  # Dropout probability for hidden layers
+            self.embedding,  # Embedding dimension
+            self.constrained_embedding,  # Whether embeddings are constrained
+        ).to(
+            self.device
+        )  # Move the model to the specified device
+
+        # Apply compatibility mode for weight initialization if needed
         if compatibility_mode:
             model._reset_weights_to_compatibility_mode()
+
+        # Store the model in the GRU4Rec object
         self.model = model
+
+        # Initialize the optimizer with IndexedAdagradM
         opt = IndexedAdagradM(
-            self.model.parameters(), self.learning_rate, self.momentum
+            self.model.parameters(),  # Parameters to optimize
+            self.learning_rate,  # Learning rate
+            self.momentum,  # Momentum for the optimizer
         )
+
+        # Training loop over epochs
         for epoch in range(self.n_epochs):
-            t0 = time.time()
+            t0 = time.time()  # Start time of the epoch
+
+            # Initialize hidden states for the GRU layers
             H = []
             for i in range(len(self.layers)):
                 H.append(
                     torch.zeros(
-                        (self.batch_size, self.layers[i]),
+                        (
+                            self.batch_size,
+                            self.layers[i],
+                        ),  # Shape: (batch_size, layer_size)
                         dtype=torch.float32,
                         requires_grad=False,
-                        device=self.device,
+                        device=self.device,  # Allocate on the same device as the model
                     )
                 )
-            c = []
-            cc = []
-            n_valid = self.batch_size
+
+            c = []  # Store loss values
+            cc = []  # Store counts of valid samples
+            n_valid = self.batch_size  # Number of valid samples in each batch
+
+            # Define a hook to adjust hidden states when sessions finish or reset
             reset_hook = lambda n_valid, finished_mask, valid_mask: self._adjust_hidden(
                 n_valid, finished_mask, valid_mask, H
             )
+
+            # Iterate over batches of input and output indices
             for in_idx, out_idx in self.data_iterator(
-                enable_neg_samples=(self.n_sample > 0), reset_hook=reset_hook
+                enable_neg_samples=(self.n_sample > 0),  # Enable negative sampling
+                reset_hook=reset_hook,  # Hook for resetting hidden states
             ):
                 for h in H:
-                    h.detach_()
-                self.model.zero_grad()
+                    h.detach_()  # Detach hidden states to avoid gradient accumulation
+
+                self.model.zero_grad()  # Zero out gradients from the previous step
+
+                # Forward pass through the model
                 R = self.model.forward(in_idx, H, out_idx, training=True)
+
+                # Compute the loss
                 L = self.loss_function(R, out_idx, n_valid) / self.batch_size
-                L.backward()
-                opt.step()
+                L.backward()  # Backpropagate the gradients
+                opt.step()  # Update model parameters
+
+                # Store the loss value
                 L = L.cpu().detach().numpy()
                 c.append(L)
                 cc.append(n_valid)
+
+                # Handle NaN errors in the loss
                 if np.isnan(L):
                     print(str(epoch) + ": NaN error!")
                     self.error_during_train = True
                     return
+
+            # Calculate the average loss for the epoch
             c = np.array(c)
             cc = np.array(cc)
             avgc = np.sum(c * cc) / np.sum(cc)
+
+            # Check for NaN errors in the average loss
             if np.isnan(avgc):
                 print("Epoch {}: NaN error!".format(str(epoch)))
                 self.error_during_train = True
                 return
+
+            # Calculate elapsed time for the epoch
             t1 = time.time()
             dt = t1 - t0
+
+            # Print progress and performance metrics
             print(
                 "Epoch{} --> loss: {:.6f} \t({:.2f}s) \t[{:.2f} mb/s | {:.0f} e/s]".format(
                     epoch + 1, avgc, dt, len(c) / dt, np.sum(cc) / dt
