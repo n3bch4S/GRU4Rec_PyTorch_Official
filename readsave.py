@@ -4,7 +4,7 @@ import joblib
 
 read_params: list[dict] = [
     {
-        "filepath_or_buffer": "dataset/yoochoose-clicks-100k.dat",
+        "filepath_or_buffer": "raw_dataset/yoochoose-clicks-100k.dat",
         "usecols": ["SessionId", "Time", "ItemId"],
         "dtype": {
             "SessionId": np.int32,
@@ -13,7 +13,7 @@ read_params: list[dict] = [
         "parse_dates": ["Time"],
     },
     {
-        "filepath_or_buffer": "dataset/yoochoose-test-100k.dat",
+        "filepath_or_buffer": "raw_dataset/yoochoose-test-100k.dat",
         "usecols": ["SessionId", "Time", "ItemId"],
         "dtype": {
             "SessionId": np.int32,
@@ -23,9 +23,33 @@ read_params: list[dict] = [
     },
 ]
 
-write_params: list[dict] = [
-    {"filename": "dataset/yoochoose-clicks-100k.pickle"},
-    {"filename": "dataset/yoochoose-test-100k.pickle"},
+pickle_params: list[dict] = [
+    {"filename": "dataset/01_yoochoose_clicks_100k.pickle"},
+    {"filename": "dataset/02_yoochoose_test_100k.pickle"},
+]
+
+csv_params: list[dict] = [
+    {
+        "path_or_buf": "dataset/03_yoochoose_clicks_100k.csv",
+        "index": False,
+    },
+    {
+        "path_or_buf": "dataset/04_yoochoose_test_100k.csv",
+        "index": False,
+    },
+]
+
+tsv_params: list[dict] = [
+    {
+        "path_or_buf": "dataset/05_yoochoose_clicks_100k.tsv",
+        "sep": "\t",
+        "index": False,
+    },
+    {
+        "path_or_buf": "dataset/06_yoochoose_test_100k.tsv",
+        "sep": "\t",
+        "index": False,
+    },
 ]
 
 
@@ -55,7 +79,9 @@ def remove_non_exist_item(
 
 def main() -> None:
     read_train, read_test = read_params[0], read_params[1]
-    write_train, write_test = write_params[0], write_params[1]
+    pickle_train, pickle_test = pickle_params[0], pickle_params[1]
+    csv_train, csv_test = csv_params[0], csv_params[1]
+    tsv_train, tsv_test = tsv_params[0], tsv_params[1]
 
     # Read train test
     print("Read train test...")
@@ -70,8 +96,14 @@ def main() -> None:
 
     # Save processed data
     print("Saving...")
-    joblib.dump(train_df, **write_train)
-    joblib.dump(test_df, **write_test)
+    joblib.dump(train_df, **pickle_train)
+    joblib.dump(test_df, **pickle_test)
+
+    train_df.to_csv(**csv_train)
+    test_df.to_csv(**csv_test)
+
+    train_df.to_csv(**tsv_train)
+    test_df.to_csv(**tsv_test)
     print("Done saving")
 
 
